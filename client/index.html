@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather App</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Weather App</h1>
+        <form id="locationForm">
+            <div class="form-group">
+                <label for="locationInput">Enter Location:</label>
+                <input type="text" class="form-control" id="locationInput" placeholder="E.g., New York" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Weather</button>
+        </form>
+        <div id="weather-info" style="margin-top: 20px;"></div>
+        <div id="table-container" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        document.getElementById('locationForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            var location = document.getElementById('locationInput').value;
+            console.log(location);
+            fetch(`/weather`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ location: location })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var weatherInfo = document.getElementById('weather-info');
+                weatherInfo.innerHTML = `<h2>Weather Information for ${data.resolvedAddress}</h2>
+                    <p>Latitude: ${data.latitude}</p>
+                    <p>Longitude: ${data.longitude}</p>
+                    <p>Description: ${data.description}</p>`;
+
+                var tableContainer = document.getElementById('table-container');
+                tableContainer.innerHTML = '';
+
+                var tableHTML = '<h2>Weather Information</h2><table class="table table-striped"><thead><tr><th>Date</th><th>Max Temperature (°C)</th><th>Min Temperature (°C)</th><th>Conditions</th></tr></thead><tbody>';
+
+                data.days.forEach(day => {
+                    var datetime = day.datetime;
+                    var tempMax = day.tempmax;
+                    var tempMin = day.tempmin;
+                    var conditions = day.conditions;
+
+                    tableHTML += `<tr><td>${datetime}</td><td>${tempMax}</td><td>${tempMin}</td><td>${conditions}</td></tr>`;
+                });
+
+                tableHTML += '</tbody></table>';
+                tableContainer.innerHTML = tableHTML;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
